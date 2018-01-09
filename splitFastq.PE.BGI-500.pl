@@ -95,7 +95,7 @@ while (my $fq1_id = <$fq1_in>, my $fq2_id = <$fq2_in>)
                 push @{$buf1[$box{$bc_se} - 1]}, "$fq1_id $bc_se\n$fq1_se\n+\n$fq1_qs\n";
                 push @{$buf2[$box{$bc_se} - 1]}, "$fq2_id $bc_se\n$fq2_se\n+\n$fq2_qs\n";
 
-                        $stat[$box{$bc_se} - 1]{$bc_se} ++;
+                $stat[$box{$bc_se} - 1]{$bc_se} ++;
 
                 if (@{$buf1[$box{$bc_se} - 1]} == 200000 and @{$buf2[$box{$bc_se} - 1]} == 200000)
                 {

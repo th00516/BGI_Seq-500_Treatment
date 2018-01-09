@@ -71,7 +71,7 @@ while (my $fq1_id = <$fq1_in>)
 {
         chomp $fq1_id;
 
-        my $id1 = $fq1_id
+        my $id1 = $fq1_id;
 
         my $fq1_se = <$fq1_in>; chomp $fq1_se; <$fq1_in>;
         my $fq1_qs = <$fq1_in>; chomp $fq1_qs;
@@ -87,9 +87,9 @@ while (my $fq1_id = <$fq1_in>)
         {
                 push @{$buf1[$box{$bc_se} - 1]}, "$fq1_id $bc_se\n$fq1_se\n+\n$fq1_qs\n";
 
-                        $stat[$box{$bc_se} - 1]{$bc_se} ++;
+                $stat[$box{$bc_se} - 1]{$bc_se} ++;
 
-                if (@{$buf1[$box{$bc_se} - 1]} == 400000 and @{$buf2[$box{$bc_se} - 1]} == 400000)
+                if (@{$buf1[$box{$bc_se} - 1]} == 400000)
                 {
                         $fq1_out[$box{$bc_se} - 1] -> print (join '', @{$buf1[$box{$bc_se} - 1]}); undef $buf1[$box{$bc_se} - 1];
                 }
