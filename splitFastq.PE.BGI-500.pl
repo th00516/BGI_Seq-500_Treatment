@@ -10,7 +10,7 @@
         Date:   2017-05-10 (v2.1)
         Date:   2017-05-19 (v2.2)  // To improve performance further
         Date:   2018-05-29 (v2.3)  // To modify the OUTPUT cache size from 200k to 10k
-                                      To add a new function of check data without OUTPUT
+                                      To add a new function of check/debug data without OUTPUT
                                       To change the suffix of OUTPUT dirctory from '.cut' into '.splitted'
 
 =cut
@@ -23,8 +23,8 @@ use File::Basename qw/basename/;
 use IO::File;
 
 
-my ($idx, $lane, $phred, $outdir, $check, $help);
-GetOptions 'i:s' => \$idx, 'l:s' => \$lane, 'p:i' => \$phred, 'o:s' => \$outdir, 'c:s' => \$check, 'h' => \$help;
+my ($idx, $lane, $phred, $outdir, $check, $debug, $help);
+GetOptions 'i:s' => \$idx, 'l:s' => \$lane, 'p:i' => \$phred, 'o:s' => \$outdir, 'c:s' => \$check, 'd:s' => \$debug, 'h' => \$help;
 die "ERROR: Incorrect barcode file or incorrect lane input\nUSAGE: $0 -i <id-barcode_file> -l <lane> [-p 33|64] [-o output_dir] [-h]\n"
 if not defined $idx or not defined $lane;
 
@@ -60,7 +60,7 @@ while (<$bc_in>)
                 $box{$bc5} = $id if not defined $box{$bc5};
         }
 
-        unless (defined $check)
+        unless (defined $check or defined $debug)
         {
                 $fq1_out[$id - 1] = IO::File -> new ("| gzip -c > $outdir/$prefix.splitted/$prefix\_$id\_1.fq.gz") if not defined $fq1_out[$id - 1];
                 $fq2_out[$id - 1] = IO::File -> new ("| gzip -c > $outdir/$prefix.splitted/$prefix\_$id\_2.fq.gz") if not defined $fq2_out[$id - 1];
@@ -103,7 +103,7 @@ while (my $fq1_id = <$fq1_in>, my $fq2_id = <$fq2_in>)
 
                 $stat[$box{$bc_se} - 1]{$bc_se} ++;
 
-                unless (defined $check)
+                unless (defined $check or defined $debug)
                 {
                         if (@{$buf1[$box{$bc_se} - 1]} == 10000 and @{$buf2[$box{$bc_se} - 1]} == 10000)
                         {
@@ -120,7 +120,7 @@ $fq2_in -> close;
 
 map
 {
-        unless (defined $check)
+        unless (defined $check or defined $debug)
         {
                 if (defined $buf1[$box{$_} - 1] and defined $buf2[$box{$_} - 1])
                 {
@@ -134,7 +134,7 @@ map
 
 map
 {
-        unless (defined $check)
+        unless (defined $check or defined $debug)
         {
                 $fq1_out[$box{$_} - 1] -> close if defined $fq1_out[$box{$_} - 1];
                 $fq2_out[$box{$_} - 1] -> close if defined $fq2_out[$box{$_} - 1];
