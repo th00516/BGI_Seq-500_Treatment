@@ -9,6 +9,9 @@
         Date:   2017-05-09 (v2.0)  // To allow 1 bp mismatch
         Date:   2017-05-10 (v2.1)
         Date:   2017-05-19 (v2.2)  // To improve performance further
+        Date:   2018-05-29 (v2.3)  // To modify the OUTPUT cache size from 200k to 10k
+                                      To add a new function of check data without OUTPUT,
+                                      To change the suffix of OUTPUT dirctory from '.cut' into '.splitted'
 
 =cut
 
@@ -20,18 +23,18 @@ use File::Basename qw/basename/;
 use IO::File;
 
 
-my ($idx, $lane, $phred, $outdir, $help);
-GetOptions 'i:s' => \$idx, 'l:s' => \$lane, 'p:i' => \$phred, 'o:s' => \$outdir, 'h' => \$help;
+my ($idx, $lane, $phred, $outdir, $check, $help);
+GetOptions 'i:s' => \$idx, 'l:s' => \$lane, 'p:i' => \$phred, 'o:s' => \$outdir, 'c:s' => \$check, 'h' => \$help;
 die "ERROR: Incorrect barcode file or incorrect lane input\nUSAGE: $0 -i <id-barcode_file> -l <lane> [-p 33|64] [-o output_dir] [-h]\n"
 if not defined $idx or not defined $lane;
 
-if (defined $help) {print "USAGE: $0 -i <id-barcode_file> -l <lane> [-o output_dir] [-h]\n";}
+if (defined $help) {print "USAGE: $0 -i <id-barcode_file> -l <lane> [-o output_dir] [-c] [-h]\n";}
 
 $phred ||= 33; die "-p means Phred+\n" if $phred != 33 and $phred != 64;
 
 $outdir ||= './';
 my $prefix = basename $lane;
-mkdir "$outdir/$prefix.cut";
+mkdir "$outdir/$prefix.splitted";
 
 my $bc_in;
 $bc_in = IO::File -> new ("< $idx") or die "$!\n";
@@ -57,9 +60,12 @@ while (<$bc_in>)
                 $box{$bc5} = $id if not defined $box{$bc5};
         }
 
-        $fq1_out[$id - 1] = IO::File -> new ("| gzip -c > $outdir/$prefix.cut/$prefix\_$id\_1.fq.gz") if not defined $fq1_out[$id - 1];
-        $fq2_out[$id - 1] = IO::File -> new ("| gzip -c > $outdir/$prefix.cut/$prefix\_$id\_2.fq.gz") if not defined $fq2_out[$id - 1];
-        $sta_out[$id - 1] = IO::File -> new ("          > $outdir/$prefix.cut/$prefix\_$id.stat")     if not defined $sta_out[$id - 1];
+        unless (defined $check)
+        {
+                $fq1_out[$id - 1] = IO::File -> new ("| gzip -c > $outdir/$prefix.cut/$prefix\_$id\_1.fq.gz") if not defined $fq1_out[$id - 1];
+                $fq2_out[$id - 1] = IO::File -> new ("| gzip -c > $outdir/$prefix.cut/$prefix\_$id\_2.fq.gz") if not defined $fq2_out[$id - 1];
+        }
+        $sta_out[$id - 1] = IO::File -> new ("> $outdir/$prefix.splitted/$prefix\_$id.stat") if not defined $sta_out[$id - 1];
 }
 
 close $bc_in;
@@ -97,10 +103,13 @@ while (my $fq1_id = <$fq1_in>, my $fq2_id = <$fq2_in>)
 
                 $stat[$box{$bc_se} - 1]{$bc_se} ++;
 
-                if (@{$buf1[$box{$bc_se} - 1]} == 200000 and @{$buf2[$box{$bc_se} - 1]} == 200000)
+                unless (defined $check)
                 {
-                        $fq1_out[$box{$bc_se} - 1] -> print (join '', @{$buf1[$box{$bc_se} - 1]}); undef $buf1[$box{$bc_se} - 1];
-                        $fq2_out[$box{$bc_se} - 1] -> print (join '', @{$buf2[$box{$bc_se} - 1]}); undef $buf2[$box{$bc_se} - 1];
+                        if (@{$buf1[$box{$bc_se} - 1]} == 10000 and @{$buf2[$box{$bc_se} - 1]} == 10000)
+                        {
+                                $fq1_out[$box{$bc_se} - 1] -> print (join '', @{$buf1[$box{$bc_se} - 1]}); undef $buf1[$box{$bc_se} - 1];
+                                $fq2_out[$box{$bc_se} - 1] -> print (join '', @{$buf2[$box{$bc_se} - 1]}); undef $buf2[$box{$bc_se} - 1];
+                        }
                 }
         }
         else {$unsure_bc{$bc_se} ++;}
@@ -111,10 +120,13 @@ $fq2_in -> close;
 
 map
 {
-        if (defined $buf1[$box{$_} - 1] and defined $buf2[$box{$_} - 1])
+        unless (defined $check)
         {
-                $fq1_out[$box{$_} - 1] -> print (join '', @{$buf1[$box{$_} - 1]}); undef $buf1[$box{$_} - 1];
-                $fq2_out[$box{$_} - 1] -> print (join '', @{$buf2[$box{$_} - 1]}); undef $buf2[$box{$_} - 1];
+                if (defined $buf1[$box{$_} - 1] and defined $buf2[$box{$_} - 1])
+                {
+                        $fq1_out[$box{$_} - 1] -> print (join '', @{$buf1[$box{$_} - 1]}); undef $buf1[$box{$_} - 1];
+                        $fq2_out[$box{$_} - 1] -> print (join '', @{$buf2[$box{$_} - 1]}); undef $buf2[$box{$_} - 1];
+                }
         }
 
         $sta_out[$box{$_} - 1] -> printf ("=> %10s\t%8d\n", $_, $stat[$box{$_} - 1]{$_}) if defined $stat[$box{$_} - 1]{$_};
@@ -122,11 +134,15 @@ map
 
 map
 {
-        $fq1_out[$box{$_} - 1] -> close if defined $fq1_out[$box{$_} - 1];
-        $fq2_out[$box{$_} - 1] -> close if defined $fq2_out[$box{$_} - 1];
+        unless (defined $check)
+        {
+                $fq1_out[$box{$_} - 1] -> close if defined $fq1_out[$box{$_} - 1];
+                $fq2_out[$box{$_} - 1] -> close if defined $fq2_out[$box{$_} - 1];
+        }
         $sta_out[$box{$_} - 1] -> close if defined $sta_out[$box{$_} - 1];
 } keys %box;
 
-my $unsure_bc_out = IO::File -> new ("> $outdir/$prefix.cut/unsure_barcode.lst");
+my $unsure_bc_out = IO::File -> new ("> $outdir/$prefix.splitted/unsure_barcode.lst");
 map {$unsure_bc_out -> print ("$_\t$unsure_bc{$_}\n");} sort {$unsure_bc{$b} <=> $unsure_bc{$a}} keys %unsure_bc;
 $unsure_bc_out -> close;
+
