@@ -62,8 +62,8 @@ while (<$bc_in>)
 
         unless (defined $check)
         {
-                $fq1_out[$id - 1] = IO::File -> new ("| gzip -c > $outdir/$prefix.cut/$prefix\_$id\_1.fq.gz") if not defined $fq1_out[$id - 1];
-                $fq2_out[$id - 1] = IO::File -> new ("| gzip -c > $outdir/$prefix.cut/$prefix\_$id\_2.fq.gz") if not defined $fq2_out[$id - 1];
+                $fq1_out[$id - 1] = IO::File -> new ("| gzip -c > $outdir/$prefix.splitted/$prefix\_$id\_1.fq.gz") if not defined $fq1_out[$id - 1];
+                $fq2_out[$id - 1] = IO::File -> new ("| gzip -c > $outdir/$prefix.splitted/$prefix\_$id\_2.fq.gz") if not defined $fq2_out[$id - 1];
         }
         $sta_out[$id - 1] = IO::File -> new ("> $outdir/$prefix.splitted/$prefix\_$id.stat") if not defined $sta_out[$id - 1];
 }
