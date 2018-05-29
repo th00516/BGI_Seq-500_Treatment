@@ -25,10 +25,10 @@ use IO::File;
 
 my ($idx, $lane, $phred, $outdir, $check, $debug, $help);
 GetOptions 'i:s' => \$idx, 'l:s' => \$lane, 'p:i' => \$phred, 'o:s' => \$outdir, 'c:s' => \$check, 'd:s' => \$debug, 'h' => \$help;
-die "ERROR: Incorrect barcode file or incorrect lane input\nUSAGE: $0 -i <id-barcode_file> -l <lane> [-p 33|64] [-o output_dir] [-h]\n"
+die "ERROR: Incorrect barcode file or incorrect lane input\nUSAGE: $0 -i <id-barcode_file> -l <lane> [-p 33|64] [-o output_dir] [-c|-d] [-h]\n"
 if not defined $idx or not defined $lane;
 
-if (defined $help) {print "USAGE: $0 -i <id-barcode_file> -l <lane> [-o output_dir] [-c] [-h]\n";}
+if (defined $help) {print "USAGE: $0 -i <id-barcode_file> -l <lane> [-o output_dir] [-c|-d] [-h]\n";}
 
 $phred ||= 33; die "-p means Phred+\n" if $phred != 33 and $phred != 64;
 
