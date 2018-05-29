@@ -10,7 +10,7 @@
         Date:   2017-05-10 (v2.1)
         Date:   2017-05-19 (v2.2)  // To improve performance further
         Date:   2018-05-29 (v2.3)  // To modify the OUTPUT cache size from 200k to 10k
-                                      To add a new function of check data without OUTPUT,
+                                      To add a new function of check data without OUTPUT
                                       To change the suffix of OUTPUT dirctory from '.cut' into '.splitted'
 
 =cut
