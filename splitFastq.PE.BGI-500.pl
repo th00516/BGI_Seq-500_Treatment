@@ -33,6 +33,7 @@ if (defined $help) {print "USAGE: $0 -i <id-barcode_file> -l <lane> [-o output_d
 $phred ||= 33; die "-p means Phred+\n" if $phred != 33 and $phred != 64;
 
 $outdir ||= './';
+mkdir "$outdir";
 my $prefix = basename $lane;
 mkdir "$outdir/$prefix.splitted";
 
