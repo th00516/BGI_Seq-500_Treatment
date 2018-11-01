@@ -24,8 +24,18 @@ use IO::File;
 
 
 my ($idx, $lane, $phred, $outdir, $check, $debug, $help);
-GetOptions 'i:s' => \$idx, 'l:s' => \$lane, 'p:i' => \$phred, 'o:s' => \$outdir, 'c:s' => \$check, 'd:s' => \$debug, 'h' => \$help;
-die "ERROR: Incorrect barcode file or incorrect lane input\nUSAGE: $0 -i <id-barcode_file> -l <lane> [-p 33|64] [-o output_dir] [-c|-d] [-h]\n"
+
+GetOptions 'i:s' => \$idx,
+           'l:s' => \$lane,
+           'p:i' => \$phred,
+           'o:s' => \$outdir,
+           'c:s' => \$check,
+           'd:s' => \$debug,
+           'h'   => \$help;
+
+die
+"ERROR: Incorrect barcode file or incorrect lane input\n
+ USAGE: $0 -i <id-barcode_file> -l <lane> [-p 33|64] [-o output_dir] [-c|-d] [-h]\n"
 if not defined $idx or not defined $lane;
 
 if (defined $help) {print "USAGE: $0 -i <id-barcode_file> -l <lane> [-o output_dir] [-c|-d] [-h]\n";}
@@ -146,4 +156,3 @@ map
 my $unsure_bc_out = IO::File -> new ("> $outdir/$prefix.splitted/unsure_barcode.lst");
 map {$unsure_bc_out -> print ("$_\t$unsure_bc{$_}\n");} sort {$unsure_bc{$b} <=> $unsure_bc{$a}} keys %unsure_bc;
 $unsure_bc_out -> close;
-

@@ -17,8 +17,16 @@ use IO::File;
 
 
 my ($idx, $lane, $phred, $outdir, $help);
-GetOptions 'i:s' => \$idx, 'l:s' => \$lane, 'p:i' => \$phred, 'o:s' => \$outdir, 'h' => \$help;
-die "ERROR: Incorrect barcode file or incorrect lane input\nUSAGE: $0 -i <id-barcode_file> -l <lane> [-p 33|64] [-o output_dir] [-h]\n"
+
+GetOptions 'i:s' => \$idx,
+           'l:s' => \$lane,
+           'p:i' => \$phred,
+           'o:s' => \$outdir,
+           'h'   => \$help;
+
+die 
+"ERROR: Incorrect barcode file or incorrect lane input\n
+ USAGE: $0 -i <id-barcode_file> -l <lane> [-p 33|64] [-o output_dir] [-h]\n"
 if not defined $idx or not defined $lane;
 
 if (defined $help) {print "USAGE: $0 -i <id-barcode_file> -l <lane> [-o output_dir] [-h]\n";}
